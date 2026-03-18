@@ -1,0 +1,4 @@
+CompileFlags:
+  CompilationDatabase: build
+  Compiler: /usr/bin/g++
+  Add: [-std=c++17]

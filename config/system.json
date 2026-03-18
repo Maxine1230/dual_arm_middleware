@@ -1,0 +1,21 @@
+{
+    "serial_left": {
+        "port": "/dev/ttyS3",
+        "baud_rate": 115200,
+        "timeout_ms": 100
+    },
+    "serial_right": {
+        "port": "/dev/ttyS4",
+        "baud_rate": 115200,
+        "timeout_ms": 100
+    },
+    "trajectory": {
+        "max_velocity": 1.0,
+        "max_acceleration": 2.0,
+        "buffer_size": 256,
+        "control_period_ms": 10.0
+    },
+    "log_dir": "/var/log/middleware",
+    "log_level": 0,
+    "watchdog_timeout_ms": 2000
+}
