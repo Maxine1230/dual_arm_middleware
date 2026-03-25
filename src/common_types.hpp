@@ -103,6 +103,29 @@ struct ArmStatus {
     float   timestamp_ms;
 };
 
+/// STATUS_REPORT 线上 Payload（与下位机约定一致，紧凑布局便于 memcpy）
+#pragma pack(push, 1)
+struct StatusReportPayload {
+    uint8_t arm_id;           // 0=左 1=右
+    float   joint_pos[DOF];   // rad
+    float   joint_vel[DOF];   // rad/s
+    uint8_t error_code;
+    float   timestamp_ms;
+};
+#pragma pack(pop)
+static_assert(sizeof(StatusReportPayload) == 54, "STATUS_REPORT payload size");
+
+/// JOINT_CMD 线上 Payload（与 docs/protocol.md 一致）
+#pragma pack(push, 1)
+struct JointCmdPayload {
+    uint8_t arm_id;           // 0=左 1=右
+    uint8_t reserved[3];
+    float   position[DOF];    // rad
+    float   velocity[DOF];    // rad/s
+};
+#pragma pack(pop)
+static_assert(sizeof(JointCmdPayload) == 52, "JOINT_CMD payload size");
+
 // ─────────────────────────────────────────────
 //  系统配置（从 JSON 读取）
 // ─────────────────────────────────────────────
@@ -127,4 +150,6 @@ struct SystemConfig {
     std::string     log_dir;
     int             log_level;  // 0=DEBUG 1=INFO 2=WARN 3=ERROR
     int             watchdog_timeout_ms;
+    /** 超过该时间未收到 STATUS_REPORT 则判为陈旧/掉线；0 表示关闭检测 */
+    int             telemetry_stale_ms;
 };

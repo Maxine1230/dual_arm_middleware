@@ -4,8 +4,10 @@
  * state_machine.hpp  —  系统状态机
  *
  * 状态：INIT → IDLE → RUNNING ⇄ PAUSED
- *                          ↓
- *                        ERROR → SHUTDOWN
+ *            ↓         ↓
+ *          ERROR ←────┘（下位机 error_code≠0 或看门狗等）
+ *            ↓
+ *         SHUTDOWN
  *
  * 面试考点：
  *   Q: 为什么要状态机？

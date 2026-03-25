@@ -20,6 +20,9 @@
  *   buf.pop(point);    // 消费者线程
  */
 
+ #include <cstddef>          // 掌管 size_t
+#include <cstdint>          // 掌管 uint8_t, uint32_t 等
+#include <initializer_list> // 提前安抚 GCC 的大括号初始化机制
 #include <atomic>
 #include <array>
 #include <optional>

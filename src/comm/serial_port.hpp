@@ -67,6 +67,10 @@ public:
     bool is_open() const;
 
     bool send_frame(const RawFrame& frame);
+
+    /** 将 JointPoint 打包为 JOINT_CMD（含 seq 递增与 CRC），并 write 到本串口 */
+    bool send_joint_command(const JointPoint& pt);
+
     void set_frame_callback(FrameCallback cb);
 
     void start();

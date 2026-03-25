@@ -22,17 +22,22 @@ add_compile_options(
 # Thread support (required for std::thread)
 find_package(Threads REQUIRED)
 
-# nlohmann/json (header-only, vendored or system)
-find_package(nlohmann_json 3.2.0 QUIET)
-if(NOT nlohmann_json_FOUND)
-  message(STATUS "nlohmann_json not found via cmake, using FetchContent")
-  include(FetchContent)
-  FetchContent_Declare(json
-    URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.hpp
-    DOWNLOAD_NO_EXTRACT TRUE
-    DOWNLOAD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nlohmann
+# nlohmann/json 单头文件（下载到 third_party/nlohmann/json.hpp）
+set(NLOHMANN_JSON_HPP "${CMAKE_CURRENT_SOURCE_DIR}/third_party/nlohmann/json.hpp")
+if(NOT EXISTS "${NLOHMANN_JSON_HPP}")
+  message(STATUS "Downloading nlohmann/json.hpp single-header...")
+  file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/third_party/nlohmann")
+  file(DOWNLOAD
+    https://github.com/nlohmann/json/releases/download/v3.11.3/json.hpp
+    "${NLOHMANN_JSON_HPP}"
+    SHOW_PROGRESS
+    STATUS _json_dl
+    TLS_VERIFY ON
   )
-  # Fallback: just add include path if header already present
+  list(GET _json_dl 0 _dl_ok)
+  if(NOT _dl_ok EQUAL 0)
+    message(FATAL_ERROR "Failed to download json.hpp; place json.hpp in third_party/nlohmann/ manually.")
+  endif()
 endif()
 
 # Include paths

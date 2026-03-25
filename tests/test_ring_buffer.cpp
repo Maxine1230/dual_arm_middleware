@@ -6,7 +6,10 @@
 */
 
 
-* 包含必要的头文件
+/* 包含必要的头文件 */
+#include <cstddef>          // 掌管 size_t
+#include <cstdint>          // 掌管 uint8_t, uint32_t 等
+#include <initializer_list> // 提前安抚 GCC 的大括号初始化机制
 #include "utils/ring_buffer.hpp"  // 包含我们自定义的环形缓冲区类
 #include "common_types.hpp"       // 包含共同的数据类型定义，比如 JointPoint
 

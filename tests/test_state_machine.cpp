@@ -14,6 +14,11 @@ int main() {
     assert(fsm.transition(SystemState::IDLE));
     assert(fsm.current() == SystemState::IDLE);
 
+    // IDLE 可直接因下位机 fault 进入 ERROR（与 STATUS_REPORT error_code 一致）
+    assert(fsm.transition(SystemState::ERROR));
+    assert(fsm.current() == SystemState::ERROR);
+    assert(fsm.transition(SystemState::IDLE));
+
     assert(fsm.transition(SystemState::RUNNING));
     assert(fsm.transition(SystemState::PAUSED));
     assert(fsm.transition(SystemState::RUNNING));

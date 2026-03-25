@@ -15,6 +15,9 @@ CTestTestfile.cmake
 # compile_commands.json（根目录的符号链接/拷贝，build/ 里已经有）
 /compile_commands.json
 
+# 第三方自动下载依赖（由 CMake 重新拉取）
+third_party/
+
 # VSCode 本地配置（保留 tasks.json / launch.json，忽略个人状态）
 .vscode/settings.json
 .vscode/*.code-workspace
@@ -29,3 +32,4 @@ logs/
 # 系统临时文件
 .DS_Store
 Thumbs.db
+*.swp

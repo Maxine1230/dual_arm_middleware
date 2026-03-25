@@ -96,7 +96,7 @@ bool SerialPort::open() {
     tty.c_oflag &= ~OPOST;
 
     // 非阻塞语义：VMIN=0, VTIME=0 → read() 立即返回可用字节
-    tty.c_cc[VMIN]  = 0;
+    tty.c_cc[VMIN]  = 1;//1: 至少读取一个字节，0: 读取所有可用字节
     tty.c_cc[VTIME] = 0;
 
     if (tcsetattr(fd_, TCSANOW, &tty) != 0) {
@@ -208,6 +208,28 @@ bool SerialPort::send_frame(const RawFrame& frame) {
     return true;
 }
 
+bool SerialPort::send_joint_command(const JointPoint& pt) {
+    JointCmdPayload pl{};
+    pl.arm_id = static_cast<uint8_t>(pt.arm_id);
+    pl.reserved[0] = pl.reserved[1] = pl.reserved[2] = 0;
+    std::memcpy(pl.position, pt.position, sizeof(pl.position));
+    std::memcpy(pl.velocity, pt.velocity, sizeof(pl.velocity));
+
+    RawFrame f = build_frame(FrameType::JOINT_CMD,
+                             reinterpret_cast<const uint8_t*>(&pl),
+                             static_cast<uint16_t>(sizeof(pl)));
+    f.seq = seq_.fetch_add(1, std::memory_order_relaxed);
+
+    const uint8_t hdr[4] = {
+        static_cast<uint8_t>(f.type),
+        f.seq,
+        static_cast<uint8_t>(f.length & 0xFF),
+        static_cast<uint8_t>(f.length >> 8),
+    };
+    f.crc16 = calc_crc16(f.payload, f.length, calc_crc16(hdr, 4));
+    return send_frame(f);
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 //  回调 / 线程管理
 // ═════════════════════════════════════════════════════════════════════════════
@@ -281,23 +303,28 @@ void SerialPort::rx_loop() {
                 LOG_WARN("comm", "Serial fd EPOLLERR/EPOLLHUP, rx_loop exit");
                 return;
             }
-
-            // 非阻塞：把内核里积压的字节一次读尽，降低 epoll 往返次数
-            for (;;) {
-                ssize_t n = ::read(fd_, buf, sizeof(buf));
-                if (n > 0) {
-                    feed_bytes(buf, static_cast<size_t>(n));
-                } else if (n == 0) {
-                    LOG_WARN("comm", "Serial read EOF");
-                    return;
-                } else {
-                    if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                        break;
-                    }
-                    LOG_ERROR("comm", "read: " + std::string(strerror(errno)));
-                    return;
+            
+           // 非阻塞：把内核里积压的字节一次读尽，降低 epoll 往返次数
+           for (;;) {
+            ssize_t n = ::read(fd_, buf, sizeof(buf));
+            if (n > 0) {
+                feed_bytes(buf, static_cast<size_t>(n));
+            } else if (n == 0) {
+                
+                // 遇到底层驱动报的伪 EOF，不要退出线程，只需跳出内层读取循环！
+                // 为了防止日志被疯狂刷屏，建议把这行警告也注释掉：
+                // LOG_WARN("comm", "Serial read EOF"); 
+                
+                break; // return 换成 break！
+                
+            } else {
+                if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    break;
                 }
+                LOG_ERROR("comm", "read: " + std::string(strerror(errno)));
+                return; // 真正的严重硬件错误才 return
             }
+        }
         }
     }
 }

@@ -35,7 +35,8 @@ bool StateMachine::is_valid_transition(SystemState from, SystemState to) const {
         case SystemState::INIT:
             return to == SystemState::IDLE;
         case SystemState::IDLE:
-            return to == SystemState::RUNNING || to == SystemState::SHUTDOWN;
+            return to == SystemState::RUNNING || to == SystemState::SHUTDOWN
+                || to == SystemState::ERROR;
         case SystemState::RUNNING:
             return to == SystemState::PAUSED || to == SystemState::ERROR || to == SystemState::IDLE;
         case SystemState::PAUSED:
