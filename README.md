@@ -2,10 +2,6 @@
 
 双臂机器人中间件，运行于 RK3588 开发板（Orange Pi 5），负责上位机与两路 STM32 下位机之间的指令下发、状态回收、轨迹生成与全局安全管控。
 
-> **第二阶段（串口通信）已完成**：`open()` / `termios` 8N1、`epoll` + `eventfd`、`rx_loop()`、`send_frame()`、`send_joint_command()`（`JOINT_CMD` 载荷）、逐字节解析状态机、CRC16-CCITT、心跳线程。  
-> **第三阶段（轨迹与主链路）已贯通**：五次多项式（τ 域闭式系数）、`TrajectoryGenerator` burst 灌入 `RingBuffer`、`main` 中通信线程按 `control_period_ms` 下发关节指令。  
-> **第四阶段（配置 + 状态回收 + 故障闭环）已完成**：`system.json` 解析、`STATUS_REPORT(0x03)` 反序列化入全局状态字典、`error_code`/遥测陈旧联动 `FSM -> ERROR`。
-
 ---
 
 ## 目录
